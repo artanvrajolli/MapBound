@@ -9,7 +9,6 @@
     crossorigin=""/>
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <link rel="stylesheet" href="./style.css">
-    <link rel="stylesheet" href="./output.css">
     <script src="https://unpkg.com/alpinejs" defer></script>
     <style>
         @import url('https://fonts.cdnfonts.com/css/noto-sans');
@@ -59,7 +58,7 @@
         </ul>
     </div>
 
-    <div class="absolute shadow-xl border-[2px] border-[rgba(0,0,0,0.2)] dark:bg-gray-700 dark:text-stone-300 top-20 left-1 sm:top-3 sm:left-12 z-10 bg-white rounded px-1">
+    <div class=" absolute shadow-xl border-[2px] border-[rgba(0,0,0,0.2)] dark:bg-gray-700 dark:text-stone-300 top-20 left-1 z-10 bg-white rounded px-1 sm:left-12 sm:top-2.5">
         <div class="flex items-center w-full">
             <span class="text-2xl" x-html="zoomIcon"></span>
             <span class="mx-1" x-text="(zoomLevel*100/18).toFixed(0) + '%'"></span>
@@ -76,7 +75,7 @@
         </a>
     </div>
 
-    <div class="absolute bottom-2 left-2 z-10">
+    <div class="absolute bottom-1 left-1 z-10">
         <ul class="select-none  backdrop-blur-sm bg-white/75 drop-shadow-xl  p-1 rounded-md">
             
 
