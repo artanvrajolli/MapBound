@@ -17,18 +17,6 @@
             font-family: 'Noto Sans', sans-serif;
         }
     </style>
-    <!-- 
-        public reminder to my self or anyone that use it,
-        to build tailwindcss the command is:
-        ```
-        `npx tailwindcss build -i style.css -o output.css`
-        or same thing as:
-        `npm run build`
-
-        ```
-        and to change href="./style.css" to href="./output.css" 
-        or...or keep them both
-    -->
 </head>
 <body x-data="mapWorldData" class="h-full relative">
     <div class="w-full h-full z-10 select-none dark:bg-zinc-950 dark:[&_.leaflet-control-zoom-in]:bg-gray-700 dark:[&_.leaflet-control-zoom-out]:bg-gray-700 dark:[&_.leaflet-control-zoom-in]:text-white dark:[&_.leaflet-control-zoom-out]:text-white dark:hover:[&_.leaflet-control-zoom-in]:bg-gray-500 dark:hover:[&_.leaflet-control-zoom-out]:bg-gray-500" id="map"></div>
@@ -71,7 +59,7 @@
         </ul>
     </div>
 
-    <div class="absolute shadow-xl border-[2px] border-[rgba(0,0,0,0.2)] dark:bg-gray-700 dark:text-stone-300 top-3 left-12 z-10 bg-white rounded px-1">
+    <div class="absolute shadow-xl border-[2px] border-[rgba(0,0,0,0.2)] dark:bg-gray-700 dark:text-stone-300 top-20 left-1 sm:top-3 sm:left-12 z-10 bg-white rounded px-1">
         <div class="flex items-center w-full">
             <span class="text-2xl" x-html="zoomIcon"></span>
             <span class="mx-1" x-text="(zoomLevel*100/18).toFixed(0) + '%'"></span>
@@ -300,7 +288,7 @@ document.addEventListener('alpine:init', () => {
                 localStorage.setItem('theme', value);
             });
 
-            this.themeMap.currentTheme = localStorage.getItem('theme') ?? 'dark';
+            this.themeMap.currentTheme = localStorage.getItem('theme') ?? 'light';
             const jsonData = await this.handleReverseGeocoding(42.5869578,20.9021231,3); // Kosovo
             this.selectedResult = jsonData;
 
