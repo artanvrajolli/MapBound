@@ -29,10 +29,10 @@
         and to change href="./style.css" to href="./output.css" 
         or...or keep them both
     -->
-  <link rel="stylesheet" href="/assets/index-2beda57f.css">
+  <link rel="stylesheet" href="/assets/index-6166d5ca.css">
 </head>
 <body x-data="mapWorldData" class="h-full relative">
-    <div class="w-full h-full z-10 select-none dark:bg-zinc-950" id="map"></div>
+    <div class="w-full h-full z-10 select-none dark:bg-zinc-950 dark:[&_.leaflet-control-zoom-in]:bg-gray-700 dark:[&_.leaflet-control-zoom-out]:bg-gray-700 dark:[&_.leaflet-control-zoom-in]:text-white dark:[&_.leaflet-control-zoom-out]:text-white dark:hover:[&_.leaflet-control-zoom-in]:bg-gray-500 dark:hover:[&_.leaflet-control-zoom-out]:bg-gray-500" id="map"></div>
     <div style="display:none;" x-show="developerMode.show" class="rounded-md backdrop-blur-xl absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2  bg-white/60 z-20 shadow-md">
         <div class="relative">
             <span @click="developerMode.show = false" x-html="exitIcon" 
@@ -43,7 +43,7 @@
                 Made with
             </li>
             <template x-for="{name,icon,link,usedFor} in developerMode.madeWith">
-                <li x-bind:data-usedfor="usedFor" class="before:content-[attr(data-usedfor)] before:shadow-md dark:before:bg-gray-700 dark:before:text-white before:hidden hover:before:block before:absolute before:mt-1 before:top-full before:left-0 before:bg-white before:z-20 before:w-full before:text-sm before:rounded-md before:text-center before:px-1 before:text-black before:text-bold before:pointer-events-none before:py-2 hover:bg-black/5 hover:text-sky-700 rounded-sm px-3 py-1">
+                <li x-bind:data-usedfor="usedFor" class="before:content-[attr(data-usedfor)] before:shadow-md dark:before:bg-gray-700 dark:before:text-white before:hidden hover:before:block before:absolute before:mt-1 before:top-full before:left-0 before:bg-white before:z-20 before:w-full before:text-sm before:rounded-md before:text-center before:px-1 before:text-black before:text-bold before:pointer-events-none before:py-2 hover:bg-black/5 hover:text-sky-700 dark:hover:text-stone-100 rounded-sm px-3 py-1">
                     <a target="_blank" :href="link" class="flex items-center">
                         <img class="h-[30px] w-[30px] me-1" :src="icon"/>
                         <span class="me-auto" x-text="name"></span>
@@ -70,6 +70,14 @@
             </template>
             <li x-show="searchLoading" class="text-center cursor-not-allowed py-2 px-4 rounded-lg w-full">Loading...</li>
         </ul>
+    </div>
+
+    <div class="absolute shadow-xl border-[2px] border-[rgba(0,0,0,0.2)] dark:bg-gray-700 dark:text-stone-300 top-3 left-12 z-10 bg-white rounded px-1">
+        <div class="flex items-center w-full">
+            <span class="text-2xl" x-html="zoomIcon"></span>
+            <span class="mx-1" x-text="(zoomLevel*100/18).toFixed(0) + '%'"></span>
+            <span x-text="zoomLevelLabels[zoomLevel]"></span>
+        </div>
     </div>
 
     <div class="absolute bottom-5 backdrop-blur-sm bg-white dark:bg-gray-700 rounded-full right-2 z-10">
@@ -146,10 +154,32 @@ document.addEventListener('alpine:init', () => {
         arrowTopIcon: `<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 24 24" aria-hidden="true" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M15.75 2.25H21a.75.75 0 01.75.75v5.25a.75.75 0 01-1.5 0V4.81L8.03 17.03a.75.75 0 01-1.06-1.06L19.19 3.75h-3.44a.75.75 0 010-1.5zm-10.5 4.5a1.5 1.5 0 00-1.5 1.5v10.5a1.5 1.5 0 001.5 1.5h10.5a1.5 1.5 0 001.5-1.5V10.5a.75.75 0 011.5 0v8.25a3 3 0 01-3 3H5.25a3 3 0 01-3-3V8.25a3 3 0 013-3h8.25a.75.75 0 010 1.5H5.25z" clip-rule="evenodd"></path></svg>`,
         darkIcon: `<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z"></path><path d="M10.794 3.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387a1.734 1.734 0 0 0-1.097 1.097l-.387 1.162a.217.217 0 0 1-.412 0l-.387-1.162A1.734 1.734 0 0 0 9.31 6.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387a1.734 1.734 0 0 0 1.097-1.097l.387-1.162zM13.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.156 1.156 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.156 1.156 0 0 0-.732-.732l-.774-.258a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732L13.863.1z"></path></svg>`,
         lightIcon: `<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"></path></svg>`,
-
+        zoomIcon: `<svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M11 18l-2 -1l-6 3v-13l6 -3l6 3l6 -3v8"></path><path d="M9 4v13"></path><path d="M15 7v5"></path><path d="M18 18m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"></path><path d="M20.2 20.2l1.8 1.8"></path></svg>`,
         map: null,
         tiles: [],
         search: "",
+        zoomLevel: 16,
+        zoomLevelLabels: {
+            0: 'World',
+            1: 'Continents',
+            2: 'Continents',
+            3: 'Continents',
+            4: 'Countries',
+            5: 'Countries',
+            6: 'Cities',
+            7: 'Cities',
+            8: 'Streets',
+            9: 'Streets',
+            10: 'Streets',
+            11: 'Buildings',
+            12: 'Buildings',
+            13: 'Buildings',
+            14: 'Buildings',
+            15: 'Buildings',
+            16: 'Buildings',
+            17: 'Buildings',
+            18: 'Buildings'
+        },
         createdBy:{
             github: 'https://github.com/artanvrajolli',
             linkedin: 'https://www.linkedin.com/in/artanvrajolli/',
@@ -205,19 +235,32 @@ document.addEventListener('alpine:init', () => {
                 attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
             })],
             'dark': [
-                new L.tileLayer('http://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}'),
-                new L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png')
+                // new L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}.png',{
+                //     attribution: '<a href="https://www.stadiamaps.com/" target="_blank">© Stadia Maps</a> <a href="https://www.openmaptiles.org/" target="_blank">© OpenMapTiles</a> <a href="https://www.openstreetmap.org/about/" target="_blank">© OpenStreetMap contributors</a>',
+                // })
+                new L.tileLayer('http://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',{
+                    attribution: 'Tiles &copy; arcgisonline.com',
+                }),
+                new L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',{
+                    attribution: 'Tiles &copy; cartocdn.com',
+                })
             ],
         },
         init: async function () {
             mapWorldData = this;
             this.$refs.searchInputElement.focus();
             this.map = L.map('map', {
-                zoom: 16,
+                center: [42.5869578,20.9021231],
+                zoom: this.zoomLevel,
             });
           
 
             this.map.on('click',this.handleClickMap.bind(this));
+            this.map.on('zoomend', async (event) => {
+                // const jsonData = await this.handleReverseGeocoding(this.selectedResult.lat,this.selectedResult.lon);
+                // this.selectedResult = jsonData;
+                this.zoomLevel = this.map.getZoom();
+            });
             this.$watch('search', (value) => {
                 if (value.length > 0) {
                     clearTimeout(this.searchDebounce);
@@ -234,6 +277,7 @@ document.addEventListener('alpine:init', () => {
                 this.objectsMaps.forEach((rectangle) => {
                     this.map.removeLayer(rectangle);
                 });
+                value.boundingBox = adjustBoundingBox(value.boundingbox);
                 if(value.boundingbox !== undefined){
                     let rectangle = L.rectangle([[value.boundingbox[0], value.boundingbox[2]], [value.boundingbox[1], value.boundingbox[3]]],
                     {color: "#2980b9", weight: 1}).addTo(this.map);
@@ -260,6 +304,7 @@ document.addEventListener('alpine:init', () => {
             this.themeMap.currentTheme = localStorage.getItem('theme') ?? 'dark';
             const jsonData = await this.handleReverseGeocoding(42.5869578,20.9021231,3); // Kosovo
             this.selectedResult = jsonData;
+
         },
         searchLoading: false,
         searchAbortController: null,
@@ -283,8 +328,8 @@ document.addEventListener('alpine:init', () => {
 
         handleClickMap: async function(event){
             let latlon = event.latlng;
-            let lat = latlon.lat;
-            let lon = latlon.lng;
+            let lat = latlon.lat % 90;
+            let lon = latlon.lng % 180;
             let marker = L.marker([lat, lon]).addTo(this.map);
             const jsonData = await this.handleReverseGeocoding(lat,lon);
             if(jsonData?.error){
@@ -314,6 +359,14 @@ document.addEventListener('alpine:init', () => {
       
     }));
 });
+
+
+function adjustBoundingBox(boundingBox) {
+    console.log('boundingBox:',boundingBox);
+    return boundingBox;
+}
+
+
 
 /*
     output of api for kosovo query:
