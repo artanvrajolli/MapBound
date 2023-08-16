@@ -1,0 +1,21 @@
+{
+  "name": "mapbound",
+  "version": "1.0.0",
+  "description": "This project is a simple map viewer that allows you to select a location on the map or search for a location and view its bounding box. It uses the OpenStreetMap API to retrieve the map data and bounding box information.",
+  "main": "postcss.config.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "author": "Artan Vrajolli",
+  "license": "ISC",
+  "devDependencies": {
+    "autoprefixer": "^10.4.15",
+    "postcss": "^8.4.27",
+    "tailwindcss": "^3.3.3"
+  },
+  "dependencies": {
+    "vite": "^4.4.9"
+  }
+}
