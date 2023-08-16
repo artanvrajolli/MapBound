@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html class="h-full" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    
+    
+    <script src="https://unpkg.com/alpinejs" defer></script>
+    <style>
+        @import url('https://fonts.cdnfonts.com/css/noto-sans');
+        html, body {
+            font-family: 'Noto Sans', sans-serif;
+        }
+    </style>
+    <!-- 
+        public reminder to my self or anyone that use it,
+        to build tailwindcss the command is:
+        ```
+        `npx tailwindcss build -i style.css -o output.css`
+        or same thing as:
+        `npm run build`
+
+        ```
+        and to change href="./style.css" to href="./output.css" 
+        or...or keep them both
+    -->
+  <link rel="stylesheet" href="/assets/index-2beda57f.css">
+</head>
+<body x-data="mapWorldData" class="h-full relative">
+    <div class="w-full h-full z-10 select-none dark:bg-zinc-950" id="map"></div>
+    <div style="display:none;" x-show="developerMode.show" class="rounded-md backdrop-blur-xl absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2  bg-white/60 z-20 shadow-md">
+        <div class="relative">
+            <span @click="developerMode.show = false" x-html="exitIcon" 
+            class="after:z-[-1] after:block after:absolute  after:left-1 after:top-1 after:content-[''] after:bg-white after:rounded-full after:h-4 after:w-4 text-rose-500 cursor-pointer text-2xl block absolute top-[-10px] right-[-10px]"></span>
+        </div>
+        <ul class="realtive">
+            <li class="text-center py-2 font-medium">
+                Made with
+            </li>
+            <template x-for="{name,icon,link,usedFor} in developerMode.madeWith">
+                <li x-bind:data-usedfor="usedFor" class="before:content-[attr(data-usedfor)] before:shadow-md dark:before:bg-gray-700 dark:before:text-white before:hidden hover:before:block before:absolute before:mt-1 before:top-full before:left-0 before:bg-white before:z-20 before:w-full before:text-sm before:rounded-md before:text-center before:px-1 before:text-black before:text-bold before:pointer-events-none before:py-2 hover:bg-black/5 hover:text-sky-700 rounded-sm px-3 py-1">
+                    <a target="_blank" :href="link" class="flex items-center">
+                        <img class="h-[30px] w-[30px] me-1" :src="icon"/>
+                        <span class="me-auto" x-text="name"></span>
+                        <span class="ms-2" x-html="arrowTopIcon"></span>
+                    </a>
+                </li>
+            </template>
+        </ul>
+    </div>
+    <div class="absolute top-1 right-1 z-10 max-w-md">
+        <div class="flex border bg-white dark:bg-gray-700 dark:text-white border-gray-400 py-2 px-1 rounded-md w-full">
+            <span class="text-sky-500 text-2xl" x-html="locationIcon"></span>
+            <input class="w-full border-none shadow-none bg-transparent outline-none" x-model="search" x-ref="searchInputElement" type="search" id="search" placeholder="Search for location...">
+        </div>
+        <ul x-show="dropdown" class="bg-white dark:bg-gray-700 dark:text-white">
+            <template x-if="dropdownResult.length === 0 && !searchLoading">
+                <li class="text-center py-2 px-4 rounded-lg w-full">No results found.</li>
+            </template>
+            <template x-for="result in dropdownResult" :key="result.place_id">
+                <li @click="selectedResult = result" class="flex items-center cursor-pointer py-2 px-2  w-full hover:bg-sky-200 dark:hover:bg-white/50">
+                    <span class="text-xl text-sky-500 me-1" x-html="pinIcon"></span>
+                    <span x-text="result.display_name"></span>
+                </li>
+            </template>
+            <li x-show="searchLoading" class="text-center cursor-not-allowed py-2 px-4 rounded-lg w-full">Loading...</li>
+        </ul>
+    </div>
+
+    <div class="absolute bottom-5 backdrop-blur-sm bg-white dark:bg-gray-700 rounded-full right-2 z-10">
+        <a class="flex justify-center text-xl" @click="themeMap.currentTheme = themeMap.currentTheme === 'dark' ? 'light' : 'dark'" >
+            <span class="inline-flex  rounded-full px-1.5 py-1 cursor-pointer">
+                <span class="text-slate-800  rounded-full" x-html="darkIcon"></span>
+                <span class="text-yellow-400  rounded-full" x-html="lightIcon"></span>
+            </span>
+        </a>
+    </div>
+
+    <div class="absolute bottom-2 left-2 z-10">
+        <ul class="select-none  backdrop-blur-sm bg-white/75 drop-shadow-xl  p-1 rounded-md">
+            
+
+            <li> 
+                <a target="_blank" :href="createdBy.github" class="flex items-center font-medium cursor-pointer hover:bg-white">
+                    <span class="text-2xl " x-html="githubIcon"></span>
+                    <span class="ms-1">Github</span>
+                </a>
+            </li>
+            <li>
+                <a target="_blank" :href="createdBy.linkedin" class="flex items-center font-medium cursor-pointer hover:bg-white">
+                    <span class="text-[#0a66c2] text-2xl" x-html="linkedinIcon"></span>
+                    <span class="ms-1">Linkedin</span>
+                </a>
+            </li>
+            <li>
+                <a @click="developerMode.show = !developerMode.show" class="flex mt-1 text-sm justify-center items-center font-medium cursor-pointer hover:bg-white">
+                    <span class="ms-1 ">
+                        <span >Dev Mode</span>
+                        <span class="text-sm font-semibold" x-show="developerMode.show">[ON]</span>
+                        <span class="text-sm font-semibold" x-show="!developerMode.show">[OFF]</span>
+                    </span>
+                </a>
+            </li>
+
+        
+            
+        </ul>
+    </div>
+
+</body>
+
+
+
+<script>
+var mapWorldData = null;
+
+
+
+document.addEventListener('alpine:init', () => {
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Tab') {
+            event.preventDefault();
+            mapWorldData.$refs.searchInputElement.value = "";
+            mapWorldData.$refs.searchInputElement.focus();
+        } else if (event.key === 'Escape') {
+            mapWorldData.dropdown = false;
+        } else if (event.key === 'Enter') {
+            if(mapWorldData.dropdownResult.length > 0){
+                mapWorldData.selectedResult = mapWorldData.dropdownResult[0];
+            }
+        }
+    });
+
+    Alpine.data('mapWorldData', () => ({
+        // simple icons
+        locationIcon: `<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 384 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"></path></svg>`,
+        pinIcon: `<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M3.1 11.2a.5.5 0 0 1 .4-.2H6a.5.5 0 0 1 0 1H3.75L1.5 15h13l-2.25-3H10a.5.5 0 0 1 0-1h2.5a.5.5 0 0 1 .4.2l3 4a.5.5 0 0 1-.4.8H.5a.5.5 0 0 1-.4-.8l3-4z"></path><path fill-rule="evenodd" d="M4 4a4 4 0 1 1 4.5 3.969V13.5a.5.5 0 0 1-1 0V7.97A4 4 0 0 1 4 3.999z"></path></svg>`,
+        githubIcon: `<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M511.6 76.3C264.3 76.2 64 276.4 64 523.5 64 718.9 189.3 885 363.8 946c23.5 5.9 19.9-10.8 19.9-22.2v-77.5c-135.7 15.9-141.2-73.9-150.3-88.9C215 726 171.5 718 184.5 703c30.9-15.9 62.4 4 98.9 57.9 26.4 39.1 77.9 32.5 104 26 5.7-23.5 17.9-44.5 34.7-60.8-140.6-25.2-199.2-111-199.2-213 0-49.5 16.3-95 48.3-131.7-20.4-60.5 1.9-112.3 4.9-120 58.1-5.2 118.5 41.6 123.2 45.3 33-8.9 70.7-13.6 112.9-13.6 42.4 0 80.2 4.9 113.5 13.9 11.3-8.6 67.3-48.8 121.3-43.9 2.9 7.7 24.7 58.3 5.5 118 32.4 36.8 48.9 82.7 48.9 132.3 0 102.2-59 188.1-200 212.9a127.5 127.5 0 0 1 38.1 91v112.5c.8 9 0 17.9 15 17.9 177.1-59.7 304.6-227 304.6-424.1 0-247.2-200.4-447.3-447.5-447.3z"></path></svg>`,
+        linkedinIcon: `<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M880 112H144c-17.7 0-32 14.3-32 32v736c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V144c0-17.7-14.3-32-32-32zM349.3 793.7H230.6V411.9h118.7v381.8zm-59.3-434a68.8 68.8 0 1 1 68.8-68.8c-.1 38-30.9 68.8-68.8 68.8zm503.7 434H675.1V608c0-44.3-.8-101.2-61.7-101.2-61.7 0-71.2 48.2-71.2 98v188.9H423.7V411.9h113.8v52.2h1.6c15.8-30 54.5-61.7 112.3-61.7 120.2 0 142.3 79.1 142.3 181.9v209.4z"></path></svg>`,
+        exitIcon: `<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm165.4 618.2l-66-.3L512 563.4l-99.3 118.4-66.1.3c-4.4 0-8-3.5-8-8 0-1.9.7-3.7 1.9-5.2l130.1-155L340.5 359a8.32 8.32 0 0 1-1.9-5.2c0-4.4 3.6-8 8-8l66.1.3L512 464.6l99.3-118.4 66-.3c4.4 0 8 3.5 8 8 0 1.9-.7 3.7-1.9 5.2L553.5 514l130 155c1.2 1.5 1.9 3.3 1.9 5.2 0 4.4-3.6 8-8 8z"></path></svg>`,
+        arrowTopIcon: `<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 24 24" aria-hidden="true" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M15.75 2.25H21a.75.75 0 01.75.75v5.25a.75.75 0 01-1.5 0V4.81L8.03 17.03a.75.75 0 01-1.06-1.06L19.19 3.75h-3.44a.75.75 0 010-1.5zm-10.5 4.5a1.5 1.5 0 00-1.5 1.5v10.5a1.5 1.5 0 001.5 1.5h10.5a1.5 1.5 0 001.5-1.5V10.5a.75.75 0 011.5 0v8.25a3 3 0 01-3 3H5.25a3 3 0 01-3-3V8.25a3 3 0 013-3h8.25a.75.75 0 010 1.5H5.25z" clip-rule="evenodd"></path></svg>`,
+        darkIcon: `<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z"></path><path d="M10.794 3.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387a1.734 1.734 0 0 0-1.097 1.097l-.387 1.162a.217.217 0 0 1-.412 0l-.387-1.162A1.734 1.734 0 0 0 9.31 6.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387a1.734 1.734 0 0 0 1.097-1.097l.387-1.162zM13.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.156 1.156 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.156 1.156 0 0 0-.732-.732l-.774-.258a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732L13.863.1z"></path></svg>`,
+        lightIcon: `<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"></path></svg>`,
+
+        map: null,
+        tiles: [],
+        search: "",
+        createdBy:{
+            github: 'https://github.com/artanvrajolli',
+            linkedin: 'https://www.linkedin.com/in/artanvrajolli/',
+        },
+        developerMode:{
+            show: false,
+            madeWith: [
+                {
+                    name: 'OpenStreetMap',
+                    icon: '/images/openstreetmap.svg',
+                    usedFor: 'Used to get the map and reverse geocoding.',
+                    link: 'https://www.openstreetmap.org/'
+                },
+                {
+                    name: 'Alpine',
+                    icon: '/images/alpinejs.svg',
+                    usedFor: 'Used to handle state and events.',
+                    link: 'https://alpinejs.dev/'
+                },
+                {
+                    name: 'Leaflet',
+                    icon: '/images/leafletjs.svg',
+                    usedFor: 'Used to display the map.',
+                    link: 'https://leafletjs.com/'
+                },
+                {
+                    name: 'Tailwindcss',
+                    icon: '/images/tailwindcss.svg',
+                    usedFor: 'Used to style the page.',
+                    link: 'https://tailwindcss.com/'
+                },
+                {
+                    name: 'Vite',
+                    icon: '/images/vite.svg',
+                    usedFor: 'Used to build the project.',
+                    link: 'https://vitejs.dev/'
+                },
+                {
+                    name:"Figma",
+                    icon: '/images/figma.svg',
+                    usedFor: 'Used to design the page/icons.',
+                    link: 'https://www.figma.com/'
+                }
+            ]
+        },
+        selectedResult: null,
+        dropdown: false,
+        dropdownResult: [],
+        objectsMaps: [],
+        themeMap:{
+            currentTheme: null,
+            'light': [new L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+                attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
+            })],
+            'dark': [
+                new L.tileLayer('http://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}'),
+                new L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png')
+            ],
+        },
+        init: async function () {
+            mapWorldData = this;
+            this.$refs.searchInputElement.focus();
+            this.map = L.map('map', {
+                zoom: 16,
+            });
+          
+
+            this.map.on('click',this.handleClickMap.bind(this));
+            this.$watch('search', (value) => {
+                if (value.length > 0) {
+                    clearTimeout(this.searchDebounce);
+                    this.searchDebounce = setTimeout(() => {
+                        this.searchValue(value);
+                    }, 500);
+                } else {
+                    this.dropdown = false;
+                }
+            });
+
+            this.$watch('selectedResult',(value)=>{
+                this.dropdown = false;
+                this.objectsMaps.forEach((rectangle) => {
+                    this.map.removeLayer(rectangle);
+                });
+                if(value.boundingbox !== undefined){
+                    let rectangle = L.rectangle([[value.boundingbox[0], value.boundingbox[2]], [value.boundingbox[1], value.boundingbox[3]]],
+                    {color: "#2980b9", weight: 1}).addTo(this.map);
+                    this.map.fitBounds(rectangle.getBounds());
+                    this.objectsMaps.push(rectangle);
+                }
+                let marker = L.marker([value.lat, value.lon]).addTo(this.map);
+                marker.bindPopup(value.display_name).openPopup();
+                this.objectsMaps.push(marker);
+            });
+            this.$watch('themeMap.currentTheme', (value) => {
+                this.tiles.forEach((tile) => {
+                    this.map.removeLayer(tile);
+                });
+                this.tiles = this.themeMap[value].map(o=> o.addTo(this.map));
+                if(value === 'dark'){
+                    document.documentElement.classList.add('dark');
+                }else{
+                    document.documentElement.classList.remove('dark');
+                }
+                localStorage.setItem('theme', value);
+            });
+
+            this.themeMap.currentTheme = localStorage.getItem('theme') ?? 'dark';
+            const jsonData = await this.handleReverseGeocoding(42.5869578,20.9021231,3); // Kosovo
+            this.selectedResult = jsonData;
+        },
+        searchLoading: false,
+        searchAbortController: null,
+        searchDebounce: null,
+        searchValue: function(value){
+            this.searchAbortController && this.searchAbortController.abort();
+            this.searchAbortController = new AbortController();
+            this.searchLoading = true;
+            this.dropdown = true;
+            fetch(`https://nominatim.openstreetmap.org/search?q=${value}&format=json&polygon=1&addressdetails=1&extratags=1`,{
+                signal: this.searchAbortController.signal
+            })
+            .then(response => response.json())
+            .then(data => {
+                this.dropdownResult = data;
+                this.searchLoading = false;
+            }).catch(error => {
+                console.log(error.name);
+            });
+        },
+
+        handleClickMap: async function(event){
+            let latlon = event.latlng;
+            let lat = latlon.lat;
+            let lon = latlon.lng;
+            let marker = L.marker([lat, lon]).addTo(this.map);
+            const jsonData = await this.handleReverseGeocoding(lat,lon);
+            if(jsonData?.error){
+                this.objectsMaps.forEach((rectangle) => {
+                    this.map.removeLayer(rectangle);
+                });
+                marker.bindPopup("Nothing found here!").openPopup();
+                this.objectsMaps.push(marker);
+                return;
+            }
+            marker.bindPopup(jsonData.display_name).openPopup();
+            this.selectedResult = jsonData;
+            this.objectsMaps.push(marker);
+            
+        },
+        geoReverseController: null,
+        handleReverseGeocoding: async function(lat,lon,zoom=undefined){
+            this.geoReverseController && this.geoReverseController.abort();
+            this.geoReverseController = new AbortController();
+            let currentZoom = zoom || this.map.getZoom();
+            const jsonData = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&zoom=${currentZoom}`,{
+                signal: this.geoReverseController.signal
+            })
+            .then(response => response.json());
+            return jsonData;
+        },
+      
+    }));
+});
+
+/*
+    output of api for kosovo query:
+    {
+        "place_id": 298787436,
+        "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+        "osm_type": "relation",
+        "osm_id": 7118787,
+        "lat": "42.6638771",
+        "lon": "21.1640849",
+        "class": "boundary",
+        "type": "administrative",
+        "place_rank": 15,
+        "importance": 0.5670172705340004,
+        "addresstype": "city",
+        "name": "Pristina",
+        "display_name": "Pristina, Municipality of Pristina, Kosovo",
+        "address": {
+            "city": "Pristina",
+            "county": "Municipality of Pristina",
+            "country": "Kosovo",
+            "country_code": "xk"
+        },
+        "boundingbox": [
+            "42.6290946",
+            "42.6969650",
+            "21.1066198",
+            "21.2136267"
+        ]
+    }
+*/
+
+</script>
+</html>
