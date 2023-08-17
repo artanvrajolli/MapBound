@@ -20,7 +20,6 @@ permissions:
 concurrency:
   group: "pages"
   cancel-in-progress: false
-
 jobs:
   deploy:
     environment:
@@ -34,13 +33,6 @@ jobs:
         run: npm ci
       - name: Build
         run: npm run build
-      - name: Commit and push changes
-        run: |
-          git config --global user.email "artanvrajolli@gmail.com"
-          git config --global user.name "Artan"
-          git add -f dist
-          git commit -m "Update dist folder"
-          git push
       - name: Setup Pages
         uses: actions/configure-pages@v3
       - name: Upload artifact
