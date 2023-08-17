@@ -36,6 +36,8 @@ jobs:
         run: npm run build
       - name: Commit and push changes
         run: |
+          git config --global user.email "artanvrajolli@gmail.com"
+          git config --global user.name "Artan"
           git add -f dist
           git commit -m "Update dist folder"
           git push
