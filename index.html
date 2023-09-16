@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>MapBound</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
     crossorigin=""/>
@@ -113,8 +113,6 @@
 <script>
 var mapWorldData = null;
 
-
-
 document.addEventListener('alpine:init', () => {
     document.addEventListener('keydown', function(event) {
         if (event.key === 'Tab') {
@@ -144,7 +142,7 @@ document.addEventListener('alpine:init', () => {
         map: null,
         tiles: [],
         search: "",
-        zoomLevel: 16,
+        zoomLevel: 9,
         zoomLevelLabels: {
             0: 'World',
             1: 'Continents',
@@ -236,8 +234,8 @@ document.addEventListener('alpine:init', () => {
             mapWorldData = this;
             this.$refs.searchInputElement.focus();
             this.map = L.map('map', {
-                center: [42.5869578,20.9021231],
                 zoom: this.zoomLevel,
+                maxBounds: [[-90, -180], [90, 180]],
             });
           
 
@@ -265,9 +263,15 @@ document.addEventListener('alpine:init', () => {
                 });
                 value.boundingBox = adjustBoundingBox(value.boundingbox);
                 if(value.boundingbox !== undefined){
-                    let rectangle = L.rectangle([[value.boundingbox[0], value.boundingbox[2]], [value.boundingbox[1], value.boundingbox[3]]],
+                    let rectangle = L.rectangle([
+                        [value.boundingbox[0], value.boundingbox[2]], 
+                        [value.boundingbox[1], value.boundingbox[3]]],
                     {color: "#2980b9", weight: 1}).addTo(this.map);
-                    this.map.fitBounds(rectangle.getBounds());
+                    
+                    // this.map.panToBounds(rectangle.getBounds());
+                    // this.map.fitBounds(rectangle.getBounds(), {padding: [50, 50], maxZoom: 18, animate: true, duration: 1.0});
+
+                    this.map.panTo(rectangle.getBounds().getCenter());
                     this.objectsMaps.push(rectangle);
                 }
                 let marker = L.marker([value.lat, value.lon]).addTo(this.map);
@@ -316,18 +320,19 @@ document.addEventListener('alpine:init', () => {
             let latlon = event.latlng;
             let lat = latlon.lat % 90;
             let lon = latlon.lng % 180;
-            let marker = L.marker([lat, lon]).addTo(this.map);
-            const jsonData = await this.handleReverseGeocoding(lat,lon);
-            if(jsonData?.error){
-                this.objectsMaps.forEach((rectangle) => {
+            
+            this.objectsMaps.forEach((rectangle) => {
                     this.map.removeLayer(rectangle);
-                });
+            });
+            const jsonData = await this.handleReverseGeocoding(lat,lon);
+            let marker = L.marker([lat, lon]).addTo(this.map);
+            if(jsonData?.error){
                 marker.bindPopup("Nothing found here!").openPopup();
-                this.objectsMaps.push(marker);
-                return;
+                this.map.panTo(marker.getLatLng());
+            }else{
+                marker.bindPopup(jsonData.display_name).openPopup();
+                this.selectedResult = jsonData;
             }
-            marker.bindPopup(jsonData.display_name).openPopup();
-            this.selectedResult = jsonData;
             this.objectsMaps.push(marker);
             
         },
@@ -338,8 +343,7 @@ document.addEventListener('alpine:init', () => {
             let currentZoom = zoom || this.map.getZoom();
             const jsonData = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&zoom=${currentZoom}`,{
                 signal: this.geoReverseController.signal
-            })
-            .then(response => response.json());
+            }).then(response => response.json());
             return jsonData;
         },
       
@@ -348,7 +352,9 @@ document.addEventListener('alpine:init', () => {
 
 
 function adjustBoundingBox(boundingBox) {
-    console.log('boundingBox:',boundingBox);
+    // todo adjust bounding box
+
+    // console.log('boundingBox:',boundingBox);
     return boundingBox;
 }
 
