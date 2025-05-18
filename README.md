@@ -28,9 +28,19 @@ Once the development server is running, you can use the map viewer by following 
 2. Use the search bar to search for a location by name.
 3. The bounding box for the selected or searched location will be displayed on the screen.
 
+## Preview
+
+Here are some screenshots of the application in action:
+
+<img src="images/demo_1.png" alt="Demo 1 - Map Viewer Interface" width="600" />
+
+<img src="images/demo_2.png" alt="Demo 2 - Bounding Box Display" width="600" />
+
+<img src="images/demo_3.png" alt="Demo 3 - Zoom in" width="600" />
+
 ## Future work
 - [ ] Add functionality to get the current location using the browser API.
-- [ ] Implement image preview for markdown README.md
+- [x] Implement image preview for markdown README.md
 
 ## License
 
